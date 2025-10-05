@@ -181,7 +181,18 @@ async def update_flag(key: str, flag_in: FlagIn, tenant: str = Depends(require_t
 
 
 @router.delete("/{key}", status_code=204)
-async def delete_flag(key: str, tenant: str = Depends(require_tenant), db: AsyncSession = Depends(get_db)):
+async def delete_flag(
+    key: str,
+    tenant: str = Depends(require_tenant),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Soft-delete a flag:
+    - Marks deleted_at timestamp
+    - Logs audit
+    - Busts cache
+    """
+    # Fetch the existing flag (skip already deleted)
     res = await db.execute(
         select(Flag).where(Flag.tenant_id == tenant, Flag.key == key, Flag.deleted_at.is_(None))
     )
@@ -189,17 +200,21 @@ async def delete_flag(key: str, tenant: str = Depends(require_tenant), db: Async
     if not flag:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Flag not found")
 
+    # Capture "before" state for audit
     before = jsonable_encoder(flag, by_alias=True)
+
+    # Perform soft delete
     flag.deleted_at = datetime.utcnow()
     db.add(flag)
     await db.commit()
 
-    # Audit
-    actor = "system"
+    # Record audit event
+    actor = "system"  # replace with JWT subject if available
     await record_audit(db, tenant, actor, "flag", key, "delete", before, None)
 
-    # Cache bust
+    # Invalidate cache
     try:
         invalidate_flag_cache(tenant, key)
     except Exception:
+        # Silent fail; log in production if needed
         pass
