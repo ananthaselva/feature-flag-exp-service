@@ -1,0 +1,32 @@
+### Get token (stub)
+POST http://localhost:8000/v1/auth/token
+Content-Type: application/json
+
+{
+  "client_id": "acme-svc",
+  "scopes": ["flags:rw"]
+}
+
+### Create flag
+POST http://localhost:8000/v1/flags
+Content-Type: application/json
+X-Tenant-ID: acme
+Authorization: Bearer {{access_token}}
+
+{
+  "key": "new_checkout",
+  "description": "New checkout flow",
+  "state": "on",
+  "variants": [{"key":"control","weight":50},{"key":"treatment","weight":50}],
+  "rules": [{"id":"r1","order":1,"when":{"percentage":50},"rollout":{"distribution":[{"key":"control","weight":50},{"key":"treatment","weight":50}]}}]
+}
+
+### Evaluate
+POST http://localhost:8000/v1/evaluate
+Content-Type: application/json
+X-Tenant-ID: acme
+
+{
+  "flag_key": "new_checkout",
+  "user": {"id":"u-123","attributes":{"country":"CA"}}
+}

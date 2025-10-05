@@ -1,0 +1,60 @@
+# --- OS / Editor junk ---
+.DS_Store
+Thumbs.db
+
+# --- Python bytecode / cache ---
+__pycache__/
+*.py[cod]
+*$py.class
+.cache/
+
+# --- Virtual environments ---
+.venv/
+venv/
+.env/
+.env.*
+!.env.example        # keep a shareable template if you add one
+.python-version      # pyenv
+
+# --- Packaging / build artifacts ---
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- Databases / local state ---
+dev.db
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Logs / runtime pid files ---
+*.log
+logs/
+*.pid
+
+# --- Tests / coverage / property-based data ---
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+coverage.xml
+test-results.xml
+
+# --- Type checkers / linters ---
+.mypy_cache/
+.pytype/
+.ruff_cache/
+.pyre/
+
+# --- IDE / Project files ---
+.vscode/
+.idea/
+*.code-workspace
+
+# --- Notebooks ---
+.ipynb_checkpoints/
+
+# --- Docker / local volumes (if you create these) ---
+docker-data/
