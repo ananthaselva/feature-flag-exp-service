@@ -8,7 +8,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
-from app.deps import require_tenant, get_db
+# Import require_auth for JWT validation
+from app.deps import require_tenant, require_auth, get_db
 from app.models import Flag
 from app.schemas import FlagIn, FlagOut
 from app.services.audit import record_audit
@@ -50,7 +51,6 @@ async def create_flag(
         rules=[r.__dict__ if hasattr(r, "__dict__") else r for r in flag_in.rules],
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
-    
     )
 
     db.add(new_flag)
@@ -100,7 +100,7 @@ async def create_flag(
     )
 
 
-@router.get("", response_model=List[FlagOut])
+@router.get("", response_model=List[FlagOut], dependencies=[Depends(require_auth)])
 async def list_flags(
     tenant: str = Depends(require_tenant),
     db: AsyncSession = Depends(get_db),
@@ -136,7 +136,7 @@ async def list_flags(
     return res.scalars().all()
 
 
-@router.get("/{key}", response_model=FlagOut)
+@router.get("/{key}", response_model=FlagOut, dependencies=[Depends(require_auth)])
 async def get_flag(key: str, tenant: str = Depends(require_tenant), db: AsyncSession = Depends(get_db)):
     res = await db.execute(
         select(Flag).where(Flag.tenant_id == tenant, Flag.key == key, Flag.deleted_at.is_(None))
