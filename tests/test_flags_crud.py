@@ -1,8 +1,7 @@
-# tests/test_flags_auth_and_tenant.py
+# tests/test_flags_crud.py
 import pytest
 from httpx import AsyncClient
 from app.main import app
-from app.deps import require_auth, require_tenant
 from app.config import settings
 
 BASE_URL = "/v1/flags"
@@ -12,7 +11,7 @@ TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsI
 TENANT_ID = "acme"
 
 flag_payload = {
-    "key": "test3",
+    "key": "test5",
     "description": "Test flag description",
     "state": "on",
     "variants": [{"key": "control", "weight": 50}, {"key": "treatment", "weight": 50}],
@@ -32,6 +31,7 @@ async def test_flags_crud():
         # CREATE FLAG
         # ---------------------------
         resp = await client.post(f"{BASE_URL}", json=flag_payload, headers=headers)
+        print("CREATE FLAG RESPONSE:", resp.status_code, resp.json())
         assert resp.status_code in (200, 201)
         data = resp.json()
         assert data["key"] == flag_payload["key"]
@@ -40,6 +40,7 @@ async def test_flags_crud():
         # GET FLAG
         # ---------------------------
         resp = await client.get(f"{BASE_URL}/{flag_payload['key']}", headers=headers)
+        print("GET FLAG RESPONSE:", resp.status_code, resp.json())
         assert resp.status_code == 200
         data = resp.json()
         assert data["key"] == flag_payload["key"]
@@ -52,6 +53,7 @@ async def test_flags_crud():
         updated_payload["state"] = "off"
 
         resp = await client.put(f"{BASE_URL}/{flag_payload['key']}", json=updated_payload, headers=headers)
+        print("UPDATE FLAG RESPONSE:", resp.status_code, resp.json())
         assert resp.status_code == 200
         data = resp.json()
         assert data["description"] == "Updated description"
@@ -61,8 +63,10 @@ async def test_flags_crud():
         # DELETE FLAG
         # ---------------------------
         resp = await client.delete(f"{BASE_URL}/{flag_payload['key']}", headers=headers)
+        print("DELETE FLAG RESPONSE:", resp.status_code)
         assert resp.status_code == 204  # No content
 
         # Verify deletion
         resp = await client.get(f"{BASE_URL}/{flag_payload['key']}", headers=headers)
+        print("VERIFY DELETION RESPONSE:", resp.status_code, resp.text)
         assert resp.status_code == 404

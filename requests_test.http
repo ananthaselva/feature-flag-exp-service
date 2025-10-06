@@ -1,0 +1,97 @@
+### Get token (stub)
+POST http://localhost:8081/v1/auth/token
+Content-Type: application/json
+
+{
+  "client_id": "test_client",
+  "scopes": ["flags:rw"]
+}
+
+### Get JWT token
+POST http://localhost:8081/v1/auth/token
+Content-Type: application/json
+
+{
+  "client_id": "test_client",
+  "scopes": ["flags:rw"]
+}
+
+### Verify JWT token
+
+POST http://localhost:8081/v1/auth/verify
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE"
+}
+
+### Create flag
+POST http://localhost:8081/v1/flags
+Content-Type: application/json
+X-Tenant-ID: ABC
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE
+
+{
+  "key": "new_checkout1",
+  "description": "New checkout flow",
+  "state": "on",
+  "variants": [
+    {"key": "control", "weight": 50},
+    {"key": "treatment", "weight": 50}
+  ],
+  "rules": [
+    {
+      "id": "r1",
+      "order": 1,
+      "when": {"percentage": 50},
+      "rollout": {
+        "distribution": [
+          {"key": "control", "weight": 50},
+          {"key": "treatment", "weight": 50}
+        ]
+      }
+    }
+  ]
+}
+
+#get flag
+
+GET http://localhost:8081/v1/flags/new_checkout1
+X-Tenant-ID: ABC
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE
+
+#update flag
+
+PUT http://localhost:8081/v1/flags/new_checkout
+Content-Type: application/json
+X-Tenant-ID: acme
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE
+
+{
+  "key": "new_checkout",
+  "description": "Updated checkout flow",
+  "state": "off",
+  "variants": [
+    {"key": "control", "weight": 40},
+    {"key": "treatment", "weight": 60}
+  ],
+  "rules": [
+    {
+      "id": "r1",
+      "order": 1,
+      "when": {"percentage": 100},
+      "rollout": {
+        "distribution": [
+          {"key": "control", "weight": 40},
+          {"key": "treatment", "weight": 60}
+        ]
+      }
+    }
+  ]
+}
+
+#delete
+
+DELETE http://localhost:8081/v1/flags/new_checkout
+X-Tenant-ID: acme
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE

@@ -1,29 +1,21 @@
-# flags.py
-from typing import List, Optional
+# app/routers/flags.py
+from typing import List
 from fastapi import APIRouter, Depends, Request, status, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi import Response
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
-from app.deps import require_auth, get_db
+from app.deps import get_db, require_auth
 from app.models import Flag
 from app.schemas import FlagIn, FlagOut
 from app.services.audit import record_audit
 from app.services.cache import invalidate_flag_cache
 
 router = APIRouter(prefix="/v1/flags", tags=["flags"])
-
-# -------------------------
-# Dependency wrappers
-# -------------------------
-def require_flags_write(request: Request):
-    return require_auth(request, required_scope="flags:write")
-
-def require_flags_read(request: Request):
-    return require_auth(request, required_scope="flags:read")
 
 
 # -------------------------
@@ -33,29 +25,42 @@ def require_flags_read(request: Request):
 async def create_flag(
     flag_in: FlagIn,
     request: Request,
-    payload: dict = Depends(require_flags_write),
+    payload: dict = Depends(lambda r=Depends(require_auth): require_auth(r, required_scope="flags:rw")),
     db: AsyncSession = Depends(get_db),
 ):
     tenant = request.state.tenant
     user = request.state.user
 
-    # Check if flag exists (idempotent create)
+    # Check idempotent create
     q = select(Flag).where(Flag.tenant_id == tenant, Flag.key == flag_in.key, Flag.deleted_at.is_(None))
     res = await db.execute(q)
     existing = res.scalars().first()
     if existing:
         return JSONResponse(content=jsonable_encoder(existing, by_alias=True), status_code=status.HTTP_200_OK)
 
+    # Serialize nested objects for DB
+    serialized_rules = []
+    for r in flag_in.rules:
+        rollout_dict = None
+        if r.rollout:
+            rollout_dict = {
+                **r.rollout.__dict__,
+                "distribution": [d.__dict__ for d in r.rollout.distribution]
+            }
+        rule_dict = {**r.__dict__, "rollout": rollout_dict}
+        serialized_rules.append(rule_dict)
+
     new_flag = Flag(
         tenant_id=tenant,
         key=flag_in.key,
         description=flag_in.description,
         state=flag_in.state,
-        variants=[v.__dict__ if hasattr(v, "__dict__") else v for v in flag_in.variants],
-        rules=[r.__dict__ if hasattr(r, "__dict__") else r for r in flag_in.rules],
+        variants=[v.__dict__ for v in flag_in.variants],
+        rules=serialized_rules,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
+
     db.add(new_flag)
     try:
         await db.commit()
@@ -69,7 +74,7 @@ async def create_flag(
 
     await db.refresh(new_flag)
 
-    # Audit & cache
+    # Audit + cache
     await record_audit(db, tenant, user, "flag", new_flag.key, "create", before=None, after=jsonable_encoder(new_flag, by_alias=True))
     try:
         invalidate_flag_cache(tenant, new_flag.key)
@@ -80,111 +85,108 @@ async def create_flag(
 
 
 # -------------------------
-# LIST FLAGS
-# -------------------------
-@router.get("", response_model=List[FlagOut])
-async def list_flags(
-    request: Request,
-    payload: dict = Depends(require_flags_read),
-    db: AsyncSession = Depends(get_db),
-    limit: int = 100,
-    offset: int = 0,
-    state: Optional[str] = None,
-    q: Optional[str] = None,
-):
-    tenant = request.state.tenant
-    query = select(Flag).where(Flag.tenant_id == tenant, Flag.deleted_at.is_(None))
-    if state:
-        query = query.where(Flag.state == state)
-    if q:
-        query = query.where(Flag.key.ilike(f"%{q}%"))
-
-    res = await db.execute(query.offset(offset).limit(limit))
-    return res.scalars().all()
-
-
-# -------------------------
-# GET FLAG
-# -------------------------
-@router.get("/{key}", response_model=FlagOut)
-async def get_flag(
-    key: str,
-    request: Request,
-    payload: dict = Depends(require_flags_read),
-    db: AsyncSession = Depends(get_db),
-):
-    tenant = request.state.tenant
-    res = await db.execute(select(Flag).where(Flag.tenant_id == tenant, Flag.key == key, Flag.deleted_at.is_(None)))
-    flag = res.scalars().first()
-    if not flag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Flag not found")
-    return flag
-
-
-# -------------------------
 # UPDATE FLAG
 # -------------------------
-@router.put("/{key}", response_model=FlagOut)
+@router.put("/{flag_key}", response_model=FlagOut)
 async def update_flag(
-    key: str,
+    flag_key: str,
     flag_in: FlagIn,
     request: Request,
-    payload: dict = Depends(require_flags_write),
+    payload: dict = Depends(lambda r=Depends(require_auth): require_auth(r, required_scope="flags:rw")),
     db: AsyncSession = Depends(get_db),
 ):
     tenant = request.state.tenant
     user = request.state.user
 
-    res = await db.execute(select(Flag).where(Flag.tenant_id == tenant, Flag.key == key, Flag.deleted_at.is_(None)))
-    flag = res.scalars().first()
-    if not flag:
+    q = select(Flag).where(Flag.tenant_id == tenant, Flag.key == flag_key, Flag.deleted_at.is_(None))
+    res = await db.execute(q)
+    existing = res.scalars().first()
+    if not existing:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Flag not found")
 
-    before = jsonable_encoder(flag, by_alias=True)
-    flag.description = flag_in.description
-    flag.state = flag_in.state
-    flag.variants = flag_in.variants
-    flag.rules = flag_in.rules
-    flag.updated_at = datetime.utcnow()
+    # Serialize nested objects
+    serialized_rules = []
+    for r in flag_in.rules:
+        rollout_dict = None
+        if r.rollout:
+            rollout_dict = {
+                **r.rollout.__dict__,
+                "distribution": [d.__dict__ for d in r.rollout.distribution]
+            }
+        rule_dict = {**r.__dict__, "rollout": rollout_dict}
+        serialized_rules.append(rule_dict)
 
-    db.add(flag)
+    # Update fields
+    existing.description = flag_in.description
+    existing.state = flag_in.state
+    existing.variants = [v.__dict__ for v in flag_in.variants]
+    existing.rules = serialized_rules
+    existing.updated_at = datetime.utcnow()
+
+    db.add(existing)
     await db.commit()
-    await db.refresh(flag)
+    await db.refresh(existing)
 
-    await record_audit(db, tenant, user, "flag", key, "update", before, jsonable_encoder(flag, by_alias=True))
+    # Audit + cache
+    await record_audit(db, tenant, user, "flag", flag_key, "update", before=None, after=jsonable_encoder(existing, by_alias=True))
     try:
-        invalidate_flag_cache(tenant, key)
+        invalidate_flag_cache(tenant, existing.key)
     except Exception:
         pass
 
-    return flag
+    return JSONResponse(content=jsonable_encoder(existing, by_alias=True), status_code=status.HTTP_200_OK)
 
 
 # -------------------------
 # DELETE FLAG
 # -------------------------
-@router.delete("/{key}", status_code=204)
+@router.delete("/{flag_key}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_flag(
-    key: str,
+    flag_key: str,
     request: Request,
-    payload: dict = Depends(require_flags_write),
+    payload: dict = Depends(lambda r=Depends(require_auth): require_auth(r, required_scope="flags:rw")),
     db: AsyncSession = Depends(get_db),
 ):
     tenant = request.state.tenant
     user = request.state.user
 
-    res = await db.execute(select(Flag).where(Flag.tenant_id == tenant, Flag.key == key, Flag.deleted_at.is_(None)))
-    flag = res.scalars().first()
-    if not flag:
+    q = select(Flag).where(Flag.tenant_id == tenant, Flag.key == flag_key, Flag.deleted_at.is_(None))
+    res = await db.execute(q)
+    existing = res.scalars().first()
+    if not existing:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Flag not found")
 
-    before = jsonable_encoder(flag, by_alias=True)
-    flag.deleted_at = datetime.utcnow()
-    db.add(flag)
+    existing.deleted_at = datetime.utcnow()
+    db.add(existing)
     await db.commit()
 
-    await record_audit(db, tenant, user, "flag", key, "delete", before, None)
+    # Audit + cache
+    await record_audit(db, tenant, user, "flag", flag_key, "delete", before=jsonable_encoder(existing, by_alias=True), after=None)
     try:
-        invalidate_flag_cache(tenant, key)
+        invalidate_flag_cache(tenant, flag_key)
     except Exception:
         pass
+
+    #return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# -------------------------
+# GET FLAG
+# -------------------------
+@router.get("/{flag_key}", response_model=FlagOut)
+async def get_flag(
+    flag_key: str,
+    request: Request,
+    payload: dict = Depends(lambda r=Depends(require_auth): require_auth(r, required_scope="flags:rw")),
+    db: AsyncSession = Depends(get_db),
+):
+    tenant = request.state.tenant
+
+    q = select(Flag).where(Flag.tenant_id == tenant, Flag.key == flag_key, Flag.deleted_at.is_(None))
+    res = await db.execute(q)
+    existing = res.scalars().first()
+    if not existing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Flag not found")
+
+    return JSONResponse(content=jsonable_encoder(existing, by_alias=True), status_code=status.HTTP_200_OK)
