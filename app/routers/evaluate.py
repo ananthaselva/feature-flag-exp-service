@@ -15,7 +15,11 @@ cache = TTLCache(ttl_seconds=15)
 @router.post(
     "/evaluate", response_model=EvaluateResponse, status_code=status.HTTP_200_OK
 )
-async def evaluate(body: EvaluateRequest, tenant: str = Depends(require_tenant), db: AsyncSession = Depends(get_db)):
+async def evaluate(
+    body: EvaluateRequest,
+    tenant: str = Depends(require_tenant),
+    db: AsyncSession = Depends(get_db),
+):
     """
     Evaluate a feature flag for a given tenant and user.
     Uses in-memory TTL cache and app.services.flag_eval for evaluation.
@@ -26,10 +30,7 @@ async def evaluate(body: EvaluateRequest, tenant: str = Depends(require_tenant),
     # Check in-memory cache first
     cached_variant = cache.get(cache_key)
     if cached_variant is not None:
-        return EvaluateResponse(
-            variant=cached_variant,
-            reason="cache_hit"
-        )
+        return EvaluateResponse(variant=cached_variant, reason="cache_hit")
 
     # Load flag from DB
     result = await db.execute(
@@ -40,7 +41,7 @@ async def evaluate(body: EvaluateRequest, tenant: str = Depends(require_tenant),
     if not flag:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Flag '{flag_key}' not found for tenant '{tenant}'"
+            detail=f"Flag '{flag_key}' not found for tenant '{tenant}'",
         )
 
     # Evaluate flag using flag_eval
@@ -56,7 +57,5 @@ async def evaluate(body: EvaluateRequest, tenant: str = Depends(require_tenant),
         variant=variant,
         reason=eval_result.get("reason", ""),
         rule_id=eval_result.get("rule_id"),
-        details=eval_result.get("details")
+        details=eval_result.get("details"),
     )
-
-

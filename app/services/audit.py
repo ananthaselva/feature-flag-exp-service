@@ -15,11 +15,15 @@ def serialize_model(obj: Union[Dict[str, Any], Any]) -> Optional[Dict[str, Any]]
         return None
 
     if isinstance(obj, dict):
-        return {k: v for k, v in obj.items() if not k.startswith('_')}
+        return {k: v for k, v in obj.items() if not k.startswith("_")}
 
-    if hasattr(obj, '__dict__'):
+    if hasattr(obj, "__dict__"):
         # Only include columns, ignore SQLAlchemy internal attributes
-        return {k: v for k, v in vars(obj).items() if not k.startswith('_') and not callable(v)}
+        return {
+            k: v
+            for k, v in vars(obj).items()
+            if not k.startswith("_") and not callable(v)
+        }
 
     return None
 
