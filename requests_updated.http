@@ -22,17 +22,17 @@ POST http://localhost:8081/v1/auth/verify
 Content-Type: application/json
 
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTMxODguNDUzMzk2LCJleHAiOjE3NTk4MzQ3ODguNDUzMzk2fQ.t1sZ03aHWhLAngo0Vxn-fTmwoDXrSsAyOu1f30xOp7A"
 }
 
 ### Create flag
 POST http://localhost:8081/v1/flags
 Content-Type: application/json
 X-Tenant-ID: ABC
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MDI1NjUuNDM4NDY1LCJleHAiOjE3NTk4MjQxNjUuNDM4NDY1fQ.MXgGFtrVWFTQJMjAPAlh5hNg7dJTkawnXXicnsh5oPU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTMxODguNDUzMzk2LCJleHAiOjE3NTk4MzQ3ODguNDUzMzk2fQ.t1sZ03aHWhLAngo0Vxn-fTmwoDXrSsAyOu1f30xOp7A
 
 {
-  "key": "test103",
+  "key": "test106",
   "description": "New checkout flow",
   "state": "on",
   "variants": [
@@ -55,21 +55,21 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2Nsa
 }
 
 ###get flag
-GET http://localhost:8081/v1/flags/test100
+GET http://localhost:8081/v1/flags/test106
 X-Tenant-ID: ABC
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTMxODguNDUzMzk2LCJleHAiOjE3NTk4MzQ3ODguNDUzMzk2fQ.t1sZ03aHWhLAngo0Vxn-fTmwoDXrSsAyOu1f30xOp7A
 
 ###update flag
 
-PUT http://localhost:8081/v1/flags/new_checkout
+PUT http://localhost:8081/v1/flags/test106
 Content-Type: application/json
 X-Tenant-ID: ABC
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTMxODguNDUzMzk2LCJleHAiOjE3NTk4MzQ3ODguNDUzMzk2fQ.t1sZ03aHWhLAngo0Vxn-fTmwoDXrSsAyOu1f30xOp7A
 
 {
-  "key": "test100",
+  "key": "test106",
   "description": "Updated checkout flow",
-  "state": "on",
+  "state": "off",
   "variants": [
     {"key": "control", "weight": 40},
     {"key": "treatment", "weight": 60}
@@ -90,9 +90,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2Nsa
 }
 
 ###delete
-DELETE http://localhost:8081/v1/flags/test100
+DELETE http://localhost:8081/v1/flags/test106
 X-Tenant-ID: ABC
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTMxODguNDUzMzk2LCJleHAiOjE3NTk4MzQ3ODguNDUzMzk2fQ.t1sZ03aHWhLAngo0Vxn-fTmwoDXrSsAyOu1f30xOp7A
 
 ### Create flag
 
