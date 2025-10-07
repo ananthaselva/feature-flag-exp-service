@@ -28,7 +28,9 @@ def flag_to_dict(flag: Flag) -> dict[str, Any]:
     "/evaluate", response_model=EvaluateResponse, status_code=status.HTTP_200_OK
 )
 async def evaluate(
-    body: EvaluateRequest, tenant: str = Depends(require_tenant), db: AsyncSession = Depends(get_db)
+    body: EvaluateRequest,
+    tenant: str = Depends(require_tenant),
+    db: AsyncSession = Depends(get_db),
 ):
     cache_key = get_flag_cache_key(tenant, body.flag_key)
 
