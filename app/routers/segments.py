@@ -1,14 +1,9 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.deps import get_db, require_tenant
-from app.models import Segment
+from app.deps import require_tenant
 from app.schemas import SegmentIn, SegmentOut
-from app.services.audit import record_audit
-from app.services.cache import TTLCache
 
 router = APIRouter(prefix="/v1/segments", tags=["segments"])
 

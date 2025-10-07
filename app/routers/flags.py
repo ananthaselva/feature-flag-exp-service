@@ -1,5 +1,5 @@
 # app/routers/flags.py
-from typing import List
+from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, Request, status, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi import Response
@@ -31,32 +31,33 @@ async def create_flag(
     tenant = request.state.tenant
     user = request.state.user
 
-    # Check idempotent create
     q = select(Flag).where(Flag.tenant_id == tenant, Flag.key == flag_in.key, Flag.deleted_at.is_(None))
     res = await db.execute(q)
-    existing = res.scalars().first()
+    existing: Optional[Flag] = res.scalars().first()
     if existing:
         return JSONResponse(content=jsonable_encoder(existing, by_alias=True), status_code=status.HTTP_200_OK)
 
-    # Serialize nested objects for DB
-    serialized_rules = []
-    for r in flag_in.rules:
-        rollout_dict = None
+    # Ensure rules and variants are always lists
+    rules: List[Dict[str, Any]] = []
+    for r in flag_in.rules or []:
+        rollout_dict: Optional[Dict[str, Any]] = None
         if r.rollout:
             rollout_dict = {
                 **r.rollout.__dict__,
-                "distribution": [d.__dict__ for d in r.rollout.distribution]
+                "distribution": [d.__dict__ for d in r.rollout.distribution or []]
             }
         rule_dict = {**r.__dict__, "rollout": rollout_dict}
-        serialized_rules.append(rule_dict)
+        rules.append(rule_dict)
+
+    variants: List[Dict[str, Any]] = [v.__dict__ for v in flag_in.variants or []]
 
     new_flag = Flag(
         tenant_id=tenant,
         key=flag_in.key,
         description=flag_in.description,
         state=flag_in.state,
-        variants=[v.__dict__ for v in flag_in.variants],
-        rules=serialized_rules,
+        variants=variants,
+        rules=rules,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
@@ -74,7 +75,6 @@ async def create_flag(
 
     await db.refresh(new_flag)
 
-    # Audit + cache
     await record_audit(db, tenant, user, "flag", new_flag.key, "create", before=None, after=jsonable_encoder(new_flag, by_alias=True))
     try:
         invalidate_flag_cache(tenant, new_flag.key)
@@ -100,34 +100,33 @@ async def update_flag(
 
     q = select(Flag).where(Flag.tenant_id == tenant, Flag.key == flag_key, Flag.deleted_at.is_(None))
     res = await db.execute(q)
-    existing = res.scalars().first()
+    existing: Optional[Flag] = res.scalars().first()
     if not existing:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Flag not found")
 
-    # Serialize nested objects
-    serialized_rules = []
-    for r in flag_in.rules:
-        rollout_dict = None
+    rules: List[Dict[str, Any]] = []
+    for r in flag_in.rules or []:
+        rollout_dict: Optional[Dict[str, Any]] = None
         if r.rollout:
             rollout_dict = {
                 **r.rollout.__dict__,
-                "distribution": [d.__dict__ for d in r.rollout.distribution]
+                "distribution": [d.__dict__ for d in r.rollout.distribution or []]
             }
         rule_dict = {**r.__dict__, "rollout": rollout_dict}
-        serialized_rules.append(rule_dict)
+        rules.append(rule_dict)
 
-    # Update fields
+    variants: List[Dict[str, Any]] = [v.__dict__ for v in flag_in.variants or []]
+
     existing.description = flag_in.description
     existing.state = flag_in.state
-    existing.variants = [v.__dict__ for v in flag_in.variants]
-    existing.rules = serialized_rules
+    existing.rules = rules
+    existing.variants = variants
     existing.updated_at = datetime.utcnow()
 
     db.add(existing)
     await db.commit()
     await db.refresh(existing)
 
-    # Audit + cache
     await record_audit(db, tenant, user, "flag", flag_key, "update", before=None, after=jsonable_encoder(existing, by_alias=True))
     try:
         invalidate_flag_cache(tenant, existing.key)

@@ -18,9 +18,8 @@ async def record_audit(
     before: Optional[Dict[str, Any]] = None,
     after: Optional[Dict[str, Any]] = None,
 ) -> Audit:
+    """Persist an audit entry."""
 
-    #Persist an audit entry.
-    
     entry = Audit(
         tenant_id=tenant,
         actor=actor,
@@ -59,4 +58,5 @@ async def list_audit(
     q = q.order_by(desc(Audit.ts)).limit(limit)
 
     res = await db.execute(q)
-    return res.scalars().all()
+    # Explicitly cast to list for MyPy type compliance
+    return list(res.scalars().all())

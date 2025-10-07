@@ -1,12 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.deps import get_db, require_tenant
-from app.models import Flag
+from app.deps import require_tenant
 from app.schemas import EvaluateRequest, EvaluateResponse
 from app.services.cache import TTLCache
-from app.services.flag_eval import evaluate_flag
 
 router = APIRouter(prefix="/v1", tags=["evaluate"])
 cache = TTLCache(ttl_seconds=15)
