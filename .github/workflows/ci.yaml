@@ -35,7 +35,6 @@ jobs:
           pip install -r requirements-dev.txt
           pip install pytest pytest-asyncio pytest-cov mypy ruff
           python -m pip install -U pip wheel
-		  
 
       # Run Ruff linter
       - name: Ruff lint check
