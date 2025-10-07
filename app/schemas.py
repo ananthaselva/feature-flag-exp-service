@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
-
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 
 class Variant(BaseModel):
@@ -67,3 +67,20 @@ class EvaluateResponse(BaseModel):
     reason: str
     rule_id: Optional[str] = None
     details: Dict[str, Any] = {}
+
+
+# --- Audit schema ---
+class AuditOut(BaseModel):
+    id: int
+    tenant_id: str
+    actor: str
+    entity: str
+    entity_key: str
+    action: str
+    before: Optional[Dict[str, Any]]
+    after: Optional[Dict[str, Any]]
+    ts: datetime
+
+    model_config = {
+        "from_attributes": True  # <- this is the Pydantic v2 way
+    }

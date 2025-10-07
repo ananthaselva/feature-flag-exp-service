@@ -32,7 +32,7 @@ X-Tenant-ID: ABC
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTMxODguNDUzMzk2LCJleHAiOjE3NTk4MzQ3ODguNDUzMzk2fQ.t1sZ03aHWhLAngo0Vxn-fTmwoDXrSsAyOu1f30xOp7A
 
 {
-  "key": "test106",
+  "key": "test110",
   "description": "New checkout flow",
   "state": "on",
   "variants": [
@@ -61,13 +61,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2Nsa
 
 ###update flag
 
-PUT http://localhost:8081/v1/flags/test106
+PUT http://localhost:8081/v1/flags/test109
 Content-Type: application/json
 X-Tenant-ID: ABC
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTMxODguNDUzMzk2LCJleHAiOjE3NTk4MzQ3ODguNDUzMzk2fQ.t1sZ03aHWhLAngo0Vxn-fTmwoDXrSsAyOu1f30xOp7A
 
 {
-  "key": "test106",
+  "key": "test109",
   "description": "Updated checkout flow",
   "state": "off",
   "variants": [
@@ -102,7 +102,7 @@ X-Tenant-ID: acme
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE
 
 {
-  "key": "new_checkout124",
+  "key": "new_checkout126",
   "description": "New checkout flow",
   "state": "on",
   "variants": [
@@ -123,3 +123,62 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2Nsa
     }
   ]
 }
+
+
+### Create Segment
+POST http://localhost:8081/v1/segments
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTg2NTcuMTkzMDYxLCJleHAiOjE3NTk4NDAyNTcuMTkzMDYxfQ.s1lJU_YGKc_WiclDKNJWySYNJ6G6GPyBXpTFlfRqNG0
+x-tenant-id: ABC
+
+{
+  "key": "canada_ios_users_1",
+  "criteria": {
+    "all": [
+      {"attr": {"country": "CA"}},
+      {"attr": {"os": "iOS"}}
+    ]
+  }
+}
+
+### List Segments
+GET http://localhost:8081/v1/segments
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTg2NTcuMTkzMDYxLCJleHAiOjE3NTk4NDAyNTcuMTkzMDYxfQ.s1lJU_YGKc_WiclDKNJWySYNJ6G6GPyBXpTFlfRqNG0
+x-tenant-id: ABC
+
+### Get Segment
+GET http://localhost:8081/v1/segments/canada_ios_users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTg2NTcuMTkzMDYxLCJleHAiOjE3NTk4NDAyNTcuMTkzMDYxfQ.s1lJU_YGKc_WiclDKNJWySYNJ6G6GPyBXpTFlfRqNG0
+x-tenant-id: ABC
+
+### Update Segment
+PUT http://localhost:8081/v1/segments/canada_ios_users
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTg2NTcuMTkzMDYxLCJleHAiOjE3NTk4NDAyNTcuMTkzMDYxfQ.s1lJU_YGKc_WiclDKNJWySYNJ6G6GPyBXpTFlfRqNG0
+x-tenant-id: ABC
+
+{
+  "key": "canada_ios_users",
+  "criteria": {
+    "any": [
+      {"attr": {"country": "CA"}},
+      {"attr": {"country": "US"}}
+    ]
+  }
+}
+
+
+### Delete Segment
+DELETE http://localhost:8081/v1/segments/canada_ios_users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTg2NTcuMTkzMDYxLCJleHAiOjE3NTk4NDAyNTcuMTkzMDYxfQ.s1lJU_YGKc_WiclDKNJWySYNJ6G6GPyBXpTFlfRqNG0
+x-tenant-id: ABC
+
+
+### list audit
+
+GET http://localhost:8081/v1/audit
+Host: your-api-domain.com
+Accept: application/json
+X-Tenant-ID: ABC
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTg2NTcuMTkzMDYxLCJleHAiOjE3NTk4NDAyNTcuMTkzMDYxfQ.s1lJU_YGKc_WiclDKNJWySYNJ6G6GPyBXpTFlfRqNG0
+

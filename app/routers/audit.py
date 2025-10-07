@@ -10,9 +10,24 @@ from app.models import Audit
 router = APIRouter(prefix="/v1/audit", tags=["audit"])
 
 
-@router.get("", response_model=List[dict])
+from datetime import datetime
+from typing import List
+from fastapi import APIRouter, Header, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.deps import get_db
+from app.models import Audit
+
+from app.schemas import AuditOut
+
+
+router = APIRouter(prefix="/v1/audit", tags=["audit"])
+
+   
+@router.get("", response_model=List[AuditOut])
 async def list_audit_entries(
-    tenant: str = Depends(require_tenant),
+    x_tenant_id: str = Header(..., alias="X-Tenant-ID"),
     entity: str | None = Query(None),
     entity_key: str | None = Query(None),
     start_ts: datetime | None = Query(None),
@@ -20,9 +35,6 @@ async def list_audit_entries(
     limit: int = Query(100, ge=1, le=1000),
     db: AsyncSession = Depends(get_db),
 ):
-    # TODO (candidate):
-    # - Query audit entries by tenant with optional filters (entity, entity_key, time window)
-    # - Return in reverse chronological order
 
     """
     List audit entries for a tenant with optional filters:
@@ -31,9 +43,7 @@ async def list_audit_entries(
     - start_ts / end_ts
     Returns reverse chronological order, limited by `limit`.
     """
-
-    q = select(Audit).where(Audit.tenant_id == tenant)
-
+    q = select(Audit).where(Audit.tenant_id == x_tenant_id)
     if entity:
         q = q.where(Audit.entity == entity)
     if entity_key:
@@ -48,5 +58,5 @@ async def list_audit_entries(
     res = await db.execute(q)
     entries = res.scalars().all()
 
-    # Return simple dicts for now; can switch to Pydantic schema
-    return [e.__dict__ for e in entries]
+    return [AuditOut.from_orm(e) for e in entries]
+
