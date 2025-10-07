@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:   # allows manual run from GitHub UI
+
+jobs:
+  lint-type-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.11]
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup Python
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -U pip setuptools wheel
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install pytest pytest-asyncio pytest-cov mypy ruff
+          python -m pip install -U pip wheel
+		  
+
+      # Run Ruff linter
+      - name: Ruff lint check
+        run: |
+          source .venv/bin/activate
+          ruff check app tests --exit-zero
+          ruff format --check app tests
+
+      # Run mypy type check
+      - name: Type check with mypy
+        run: |
+          source .venv/bin/activate
+          mypy app
+
+      # Run tests with pytest and coverage
+      - name: Run tests with pytest + coverage
+        run: |
+          source .venv/bin/activate
+          pytest tests -v --disable-warnings --cov=app --cov-report=xml --cov-report=term
+
+      # Upload coverage report as artifact
+      - name: Upload coverage XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+      # Optional: Upload coverage to Codecov
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: false

@@ -8,7 +8,7 @@ from app.config import settings
 BASE_URL = "/v1/flags"
 
 # Example JWT token for testing
-TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk3MjIwMDUuMDczNzc1LCJleHAiOjE3NTk3NDM2MDUuMDczNzc1fQ.eKYv2bahohB_d2MqD0838yWWRl4SXS9PkcIKjk2fgAE"
+TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MDI1NjUuNDM4NDY1LCJleHAiOjE3NTk4MjQxNjUuNDM4NDY1fQ.MXgGFtrVWFTQJMjAPAlh5hNg7dJTkawnXXicnsh5oPU"
 TENANT_ID = "acme"
 
 flag_payload = {

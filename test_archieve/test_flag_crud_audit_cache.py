@@ -12,7 +12,7 @@ from app.services.cache import TTLCache
 # Test data
 TENANT_ID = "ABC"
 FLAG_PAYLOAD = FlagIn(
-    key="featurey",
+    key="featureabcd",
     description="testfeature20",
     state="on",
     variants=[{"key": "string", "weight": 100}],
