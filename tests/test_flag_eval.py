@@ -4,6 +4,7 @@ from app.services.flag_eval import stable_bucket, evaluate_flag
 
 # --- Helper Fixtures --------------------------------------------------------
 
+
 @pytest.fixture
 def base_flag():
     return {
@@ -15,6 +16,7 @@ def base_flag():
         ],
         "rules": [],
     }
+
 
 @pytest.fixture
 def sample_user():
@@ -37,6 +39,7 @@ def sample_segments():
 
 # --- Tests ------------------------------------------------------------------
 
+
 def test_flag_off(base_flag, sample_user):
     base_flag["state"] = "off"
     result = evaluate_flag(base_flag, "tenantA", sample_user)
@@ -46,7 +49,11 @@ def test_flag_off(base_flag, sample_user):
 
 def test_attribute_match_rule(base_flag, sample_user):
     base_flag["rules"] = [
-        {"id": "r1", "when": {"attr": {"role": "employee"}}, "variants": [{"key": "beta", "weight": 100}]}
+        {
+            "id": "r1",
+            "when": {"attr": {"role": "employee"}},
+            "variants": [{"key": "beta", "weight": 100}],
+        }
     ]
     result = evaluate_flag(base_flag, "tenantA", sample_user)
     assert result["variant"] == "beta"
@@ -56,7 +63,11 @@ def test_attribute_match_rule(base_flag, sample_user):
 
 def test_attribute_mismatch_rule(base_flag, sample_user):
     base_flag["rules"] = [
-        {"id": "r1", "when": {"attr": {"role": "manager"}}, "variants": [{"key": "beta", "weight": 100}]}
+        {
+            "id": "r1",
+            "when": {"attr": {"role": "manager"}},
+            "variants": [{"key": "beta", "weight": 100}],
+        }
     ]
     result = evaluate_flag(base_flag, "tenantA", sample_user)
     assert result["reason"] == "default_variant"
@@ -65,7 +76,11 @@ def test_attribute_mismatch_rule(base_flag, sample_user):
 
 def test_segment_match_rule(base_flag, sample_user, sample_segments):
     base_flag["rules"] = [
-        {"id": "r1", "when": {"segment": ["seg1"]}, "variants": [{"key": "beta", "weight": 100}]}
+        {
+            "id": "r1",
+            "when": {"segment": ["seg1"]},
+            "variants": [{"key": "beta", "weight": 100}],
+        }
     ]
     result = evaluate_flag(base_flag, "tenantA", sample_user, segments=sample_segments)
     assert result["variant"] == "beta"
@@ -74,7 +89,11 @@ def test_segment_match_rule(base_flag, sample_user, sample_segments):
 
 def test_segment_mismatch_rule(base_flag, sample_user, sample_segments):
     base_flag["rules"] = [
-        {"id": "r1", "when": {"segment": ["seg2"]}, "variants": [{"key": "beta", "weight": 100}]}
+        {
+            "id": "r1",
+            "when": {"segment": ["seg2"]},
+            "variants": [{"key": "beta", "weight": 100}],
+        }
     ]
     result = evaluate_flag(base_flag, "tenantA", sample_user, segments=sample_segments)
     assert result["reason"] == "default_variant"
@@ -82,7 +101,12 @@ def test_segment_mismatch_rule(base_flag, sample_user, sample_segments):
 
 def test_percentage_rollout_allows(base_flag, sample_user):
     base_flag["rules"] = [
-        {"id": "r1", "when": {"attr": {"role": "employee"}}, "rollout": {"percentage": 100}, "variants": [{"key": "beta", "weight": 100}]}
+        {
+            "id": "r1",
+            "when": {"attr": {"role": "employee"}},
+            "rollout": {"percentage": 100},
+            "variants": [{"key": "beta", "weight": 100}],
+        }
     ]
     result = evaluate_flag(base_flag, "tenantA", sample_user)
     assert result["variant"] == "beta"
@@ -90,7 +114,12 @@ def test_percentage_rollout_allows(base_flag, sample_user):
 
 def test_percentage_rollout_blocks(base_flag, sample_user):
     base_flag["rules"] = [
-        {"id": "r1", "when": {"attr": {"role": "employee"}}, "rollout": {"percentage": 0}, "variants": [{"key": "beta", "weight": 100}]}
+        {
+            "id": "r1",
+            "when": {"attr": {"role": "employee"}},
+            "rollout": {"percentage": 0},
+            "variants": [{"key": "beta", "weight": 100}],
+        }
     ]
     result = evaluate_flag(base_flag, "tenantA", sample_user)
     assert result["reason"] == "default_variant"

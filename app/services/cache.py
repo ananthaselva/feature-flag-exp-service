@@ -1,6 +1,7 @@
 import time
 from typing import Any
 
+
 # ----- In-memory TTL cache -----
 class TTLCache:
     def __init__(self, ttl_seconds: int = 30):

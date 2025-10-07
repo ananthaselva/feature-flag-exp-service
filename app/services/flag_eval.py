@@ -31,7 +31,7 @@ def evaluate_flag(
 ) -> dict:
     """
     Evaluate a feature flag for a given user.
-    
+
     Returns a dict with:
         - variant: selected variant key (or None if flag is off)
         - reason: why variant was selected
@@ -63,8 +63,12 @@ def evaluate_flag(
                 # Limitation: segments not provided
                 continue
             user_segment_ids = [
-                s["id"] for s in segments
-                if all(user.get(k) == v for k, v in s.get("rules", [{}])[0].get("attributes", {}).items())
+                s["id"]
+                for s in segments
+                if all(
+                    user.get(k) == v
+                    for k, v in s.get("rules", [{}])[0].get("attributes", {}).items()
+                )
             ]
             if not any(seg_id in user_segment_ids for seg_id in segment_ids):
                 continue  # Skip if no segments match
@@ -75,7 +79,9 @@ def evaluate_flag(
             continue  # User not included in rollout
 
         # Variant selection via distribution
-        distribution = normalize_weights(rollout.get("distribution", rule.get("variants", [])))
+        distribution = normalize_weights(
+            rollout.get("distribution", rule.get("variants", []))
+        )
         cumulative = 0.0
         for variant in distribution:
             cumulative += variant["weight"]

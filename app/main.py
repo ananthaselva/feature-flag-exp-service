@@ -25,6 +25,7 @@ app = FastAPI(title="Feature Flag Service", version="0.1.0")
 # ---------- Middleware ----------
 app.add_middleware(metrics.MetricsMiddleware)
 
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     """Structured logging for all requests/responses."""
@@ -45,12 +46,14 @@ async def log_requests(request: Request, call_next):
         logger.exception("Unhandled exception during request", extra=ctx)
         raise
 
+
 # ---------- Startup Event ----------
 @app.on_event("startup")
 async def on_startup():
     """Create DB tables for development/demo."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
 
 # ---------- Routers ----------
 app.include_router(health_router.router)
@@ -59,6 +62,7 @@ app.include_router(flags_router.router)
 app.include_router(segments_router.router)
 app.include_router(evaluate_router.router)
 app.include_router(audit_router.router)
+
 
 # ---------- Prometheus Metrics Endpoint ----------
 @app.get("/metrics")

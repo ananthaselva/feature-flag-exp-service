@@ -9,6 +9,7 @@ from app.models import Audit
 
 router = APIRouter(prefix="/v1/audit", tags=["audit"])
 
+
 @router.get("", response_model=List[dict])
 async def list_audit_entries(
     tenant: str = Depends(require_tenant),
@@ -22,7 +23,7 @@ async def list_audit_entries(
     # TODO (candidate):
     # - Query audit entries by tenant with optional filters (entity, entity_key, time window)
     # - Return in reverse chronological order
-    
+
     """
     List audit entries for a tenant with optional filters:
     - entity
@@ -30,7 +31,7 @@ async def list_audit_entries(
     - start_ts / end_ts
     Returns reverse chronological order, limited by `limit`.
     """
-    
+
     q = select(Audit).where(Audit.tenant_id == tenant)
 
     if entity:

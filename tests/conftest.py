@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from app.deps import get_db, engine
 from app.models import Base
 
+
 # -----------------------------
 # Event loop for asyncio tests
 # -----------------------------

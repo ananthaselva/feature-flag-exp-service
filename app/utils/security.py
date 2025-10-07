@@ -16,7 +16,9 @@ def issue_token(client_id: str, scopes: list[str]) -> str:
         "sub": client_id,
         "scopes": scopes,
         "iat": now.timestamp(),
-        "exp": (now + timedelta(hours=getattr(settings, "jwt_exp_hours", 12))).timestamp(),
+        "exp": (
+            now + timedelta(hours=getattr(settings, "jwt_exp_hours", 12))
+        ).timestamp(),
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm=ALGO)
 

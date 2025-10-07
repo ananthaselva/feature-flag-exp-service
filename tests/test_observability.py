@@ -7,6 +7,7 @@ from app.utils.metrics import REQUEST_COUNT
 TENANTS = ["tenantA", "tenantB"]
 REQUEST_IDS = ["req1", "req2"]
 
+
 @pytest.mark.asyncio
 async def test_healthz_readyz():
     async with AsyncClient(app=app, base_url="http://test") as client:
@@ -52,4 +53,6 @@ async def test_metrics_counter_increment():
             before_value = before.get(key, 0)
             # Ensure counter increased for observed requests
             if any(kv in dict(key).items() for kv in requests):
-                assert after_value >= before_value + 1, f"Counter did not increment for {dict(key)}"
+                assert (
+                    after_value >= before_value + 1
+                ), f"Counter did not increment for {dict(key)}"

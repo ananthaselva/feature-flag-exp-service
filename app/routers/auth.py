@@ -6,6 +6,7 @@ from app.utils.security import issue_token, verify_token
 
 router = APIRouter(prefix="/v1/auth", tags=["auth"])
 
+
 # -------------------------
 # Request/Response schemas
 # -------------------------
@@ -13,17 +14,21 @@ class TokenRequest(BaseModel):
     client_id: str
     scopes: List[str]
 
+
 class TokenResponse(BaseModel):
     token: str
 
+
 class VerifyRequest(BaseModel):
     token: str
+
 
 class VerifyResponse(BaseModel):
     sub: str
     scopes: List[str]
     iat: float
     exp: float
+
 
 # -------------------------
 # Issue JWT token
@@ -32,6 +37,7 @@ class VerifyResponse(BaseModel):
 async def get_token(body: TokenRequest):
     token = issue_token(body.client_id, body.scopes)
     return {"token": token}
+
 
 # -------------------------
 # Verify JWT token

@@ -9,8 +9,10 @@ REQUEST_COUNT = Counter(
     ["path", "method", "status", "tenant", "request_id"],
 )
 
+
 class MetricsMiddleware(BaseHTTPMiddleware):
     """Middleware to track HTTP requests and attach tenant/request_id labels."""
+
     async def dispatch(self, request: Request, call_next):
         tenant = request.headers.get("X-Tenant-ID", "unknown")
         request_id = request.headers.get("X-Request-ID", "none")

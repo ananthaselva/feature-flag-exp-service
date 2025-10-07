@@ -7,6 +7,7 @@ from fastapi import Request
 
 # ---------- Structured JSON Logging ----------
 
+
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload: Dict[str, Any] = {
@@ -32,6 +33,7 @@ class JsonFormatter(logging.Formatter):
             payload["exc_info"] = self.formatException(record.exc_info)
         return json.dumps(payload)
 
+
 def setup_logging(level: str = "INFO") -> None:
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(JsonFormatter())
@@ -39,16 +41,21 @@ def setup_logging(level: str = "INFO") -> None:
     root.setLevel(level)
     root.handlers = [handler]
 
+
 # ---------- Helpers to attach request context ----------
-def get_request_context(request: Optional[Request] = None, duration_ms: Optional[float] = None) -> Dict[str, Any]:
+def get_request_context(
+    request: Optional[Request] = None, duration_ms: Optional[float] = None
+) -> Dict[str, Any]:
     context: Dict[str, Any] = {}
     if request:
-        context.update({
-            "path": request.url.path,
-            "method": request.method,
-            "tenant": request.headers.get("X-Tenant-ID", "unknown"),
-            "request_id": request.headers.get("X-Request-ID", "none"),
-        })
+        context.update(
+            {
+                "path": request.url.path,
+                "method": request.method,
+                "tenant": request.headers.get("X-Tenant-ID", "unknown"),
+                "request_id": request.headers.get("X-Request-ID", "none"),
+            }
+        )
     if duration_ms is not None:
         context["duration_ms"] = float(round(duration_ms, 2))  # ensure type is float
     return context
