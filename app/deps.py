@@ -58,7 +58,6 @@ async def require_tenant(
 # -------------------------
 async def require_auth(
     request: Request,
-    tenant: str = Depends(require_tenant),
     required_scope: str | None = None,
 ):
     auth_header = request.headers.get("Authorization")
@@ -66,6 +65,13 @@ async def require_auth(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid Authorization header",
+        )
+
+    tenant = request.headers.get("X-Tenant-ID")
+    if not tenant:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing X-Tenant-ID header",
         )
 
     token = auth_header.split(" ", 1)[1]
