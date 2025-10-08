@@ -55,7 +55,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2Nsa
 }
 
 ###get flag
-GET http://localhost:8081/v1/flags/test106
+GET http://localhost:8081/v1/flags/test110
 X-Tenant-ID: ABC
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTMxODguNDUzMzk2LCJleHAiOjE3NTk4MzQ3ODguNDUzMzk2fQ.t1sZ03aHWhLAngo0Vxn-fTmwoDXrSsAyOu1f30xOp7A
 
@@ -132,7 +132,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2Nsa
 x-tenant-id: ABC
 
 {
-  "key": "canada_ios_users_1",
+  "key": "canada_ios_users_2",
   "criteria": {
     "all": [
       {"attr": {"country": "CA"}},
@@ -182,3 +182,19 @@ Accept: application/json
 X-Tenant-ID: ABC
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTg2NTcuMTkzMDYxLCJleHAiOjE3NTk4NDAyNTcuMTkzMDYxfQ.s1lJU_YGKc_WiclDKNJWySYNJ6G6GPyBXpTFlfRqNG0
 
+
+### Evaluate flag and segments
+PUT http://localhost:8081//v1/evaluate
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsaWVudCIsInNjb3BlcyI6WyJmbGFnczpydyJdLCJpYXQiOjE3NTk4MTg2NTcuMTkzMDYxLCJleHAiOjE3NTk4NDAyNTcuMTkzMDYxfQ.s1lJU_YGKc_WiclDKNJWySYNJ6G6GPyBXpTFlfRqNG0
+x-tenant-id: ABC
+
+{
+  "flag_key": "test110",
+  "user": {
+    "id": "test",
+    "email": "test@example.com",
+    "country": "US",
+    ...
+  }
+}
